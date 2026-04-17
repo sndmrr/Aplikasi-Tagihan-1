@@ -1,15 +1,25 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+// import { User, Session } from '@supabase/supabase-js';
+// import { supabase } from '@/integrations/supabase/client';
 
 // App version - increment this to force all users to re-login
 const APP_VERSION = '2.0.0';
 const VERSION_KEY = 'app_version';
 
+// Mock User interface for empty database mode
+interface MockUser {
+  id: string;
+  email: string;
+}
+
+interface MockSession {
+  user: MockUser;
+}
+
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: MockUser | null;
+  session: MockSession | null;
   loading: boolean;
   userName: string | null;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
@@ -20,8 +30,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
+  const [session, setSession] = useState<MockSession | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +42,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Version mismatch - force logout
       localStorage.clear();
       sessionStorage.clear();
-      supabase.auth.signOut();
       setUser(null);
       setSession(null);
       setUserName(null);
@@ -40,79 +49,61 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Load saved user name
+    // Load saved user name and email from localStorage
     const savedName = localStorage.getItem('userName');
-    if (savedName) {
+    const savedEmail = localStorage.getItem('userEmail');
+    const savedUserId = localStorage.getItem('userId');
+    
+    if (savedName && savedEmail && savedUserId) {
       setUserName(savedName);
+      const mockUser: MockUser = {
+        id: savedUserId,
+        email: savedEmail
+      };
+      setUser(mockUser);
+      setSession({ user: mockUser });
     }
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (!session) {
-          setUserName(null);
-          localStorage.removeItem('userName');
-        }
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    
+    setLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
-    return { error };
+    // Empty database mode - just simulate success
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string, nama: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (!error) {
-      setUserName(nama);
-      localStorage.setItem('userName', nama);
-      // Store current app version
-      localStorage.setItem(VERSION_KEY, APP_VERSION);
-    }
-    return { error };
+    // Empty database mode - create mock user
+    const mockUser: MockUser = {
+      id: 'mock-user-' + Date.now(),
+      email: email
+    };
+    
+    setUser(mockUser);
+    setSession({ user: mockUser });
+    setUserName(nama);
+    
+    // Save to localStorage
+    localStorage.setItem('userName', nama);
+    localStorage.setItem('userEmail', email);
+    localStorage.setItem('userId', mockUser.id);
+    localStorage.setItem(VERSION_KEY, APP_VERSION);
+    
+    return { error: null };
   };
 
   const signOut = async () => {
-    // Clear local state IMMEDIATELY first
+    // Clear local state
     setUser(null);
     setSession(null);
     setUserName(null);
     
     // Clear all storage
     localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
     localStorage.clear();
     sessionStorage.clear();
-    
-    try {
-      // Sign out from Supabase
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.warn('Supabase signOut error:', e);
-    }
     
     // Force redirect to auth page
     window.location.href = '/auth';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export type UserRole = 'admin' | 'mitra' | null;
@@ -27,39 +27,10 @@ export const useUserRole = () => {
         return;
       }
 
-      try {
-        // Fetch role
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
-        if (roleError) {
-          console.error('Error fetching role:', roleError);
-          setRole(null);
-        } else {
-          setRole(roleData?.role as UserRole);
-        }
-
-        // Fetch profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          setProfile(null);
-        } else {
-          setProfile(profileData);
-        }
-      } catch (error) {
-        console.error('Error in fetchUserRoleAndProfile:', error);
-      } finally {
-        setLoading(false);
-      }
+      // Empty database mode - no data fetching
+      setRole(null);
+      setProfile(null);
+      setLoading(false);
     };
 
     fetchUserRoleAndProfile();
