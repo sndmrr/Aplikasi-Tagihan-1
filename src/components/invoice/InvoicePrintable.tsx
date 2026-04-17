@@ -5,7 +5,6 @@ import { AlertTriangle, Plus, X, Building2, Calendar, Hash, MapPin } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAppSettingsContext } from '@/contexts/AppSettingsContext';
 
 interface AdditionalTagihan {
   id: string;
@@ -42,7 +41,6 @@ export const InvoicePrintable = React.forwardRef<HTMLDivElement, InvoicePrintabl
 }, ref) => {
   const [tempNama, setTempNama] = useState('');
   const [tempJumlah, setTempJumlah] = useState('');
-  const { appName } = useAppSettingsContext();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -129,7 +127,7 @@ export const InvoicePrintable = React.forwardRef<HTMLDivElement, InvoicePrintabl
               <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{appName.toUpperCase()}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SYAKIR DIGITAL</h1>
               <p className="text-blue-100 text-xs sm:text-sm font-medium">Layanan Kebutuhan Digital</p>
             </div>
           </div>
@@ -343,7 +341,7 @@ export const InvoicePrintable = React.forwardRef<HTMLDivElement, InvoicePrintabl
         
         <div className="text-center space-y-2 sm:space-y-3 relative z-10">
           <h3 className="text-base sm:text-lg font-bold">Terima Kasih Atas Kepercayaan Anda</h3>
-          <p className="text-blue-100 text-xs sm:text-sm">Invoice ini dibuat secara otomatis oleh sistem {appName}</p>
+          <p className="text-blue-100 text-xs sm:text-sm">Invoice ini dibuat secara otomatis oleh sistem Syakir Digital</p>
           <div className="pt-2">
             <div className={`inline-flex items-center px-4 py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg ${getTrustScoreColor(trustScore)}`}>
               ⭐ Skor Kepercayaan: {trustScore}

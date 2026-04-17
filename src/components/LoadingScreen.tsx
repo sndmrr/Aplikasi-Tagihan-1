@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAppSettingsContext } from '@/contexts/AppSettingsContext';
+import syakirLogo from '@/assets/syakir-logo.png';
 
 interface LoadingScreenProps {
   onLoadingComplete: () => void;
@@ -7,7 +7,6 @@ interface LoadingScreenProps {
 
 export const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
-  const { appName } = useAppSettingsContext();
 
   useEffect(() => {
     const progressInterval = setInterval(() => {
@@ -34,16 +33,14 @@ export const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         <div className="mb-8">
           <div className="relative flex justify-center">
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg animate-pulse" style={{ animationDuration: '2s' }}>
-                <span className="text-white font-bold text-4xl">ST</span>
-              </div>
+              <img src={syakirLogo} alt="Syakir Digital Logo" className="h-24 w-auto animate-pulse" style={{ animationDuration: '2s' }} />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 blur-2xl animate-pulse" style={{ animationDuration: '2s' }}></div>
             </div>
           </div>
         </div>
         
         <div className="text-responsive-lg font-orbitron font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent animate-bounce-in">
-          {appName}
+          Syakir Digital
         </div>
         
         <div className="mt-4 text-white/80 text-sm font-medium animate-slide-up">

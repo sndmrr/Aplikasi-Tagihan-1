@@ -11,7 +11,6 @@ import { LogIn, UserPlus, Shield, Zap, Signal } from 'lucide-react';
 import { AnimatedLogo } from '@/components/AnimatedLogo';
 import { ResellerRegistration } from '@/components/ResellerRegistration';
 import { motion } from 'framer-motion';
-import { useAppSettingsContext } from '@/contexts/AppSettingsContext';
 
 const Auth = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -21,7 +20,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, user } = useAuth();
   const { toast } = useToast();
-  const { appName } = useAppSettingsContext();
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -80,7 +78,7 @@ const Auth = () => {
                 </div>
               </motion.div>
               <CardTitle className="text-3xl font-orbitron font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent">
-                {appName}
+                Syakir Digital
               </CardTitle>
               <p className="text-white/50 mt-2 text-sm">Masuk ke akun Anda untuk melanjutkan</p>
             </CardHeader>
@@ -124,7 +122,7 @@ const Auth = () => {
             </div>
           </motion.div>
           <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-4xl sm:text-5xl lg:text-6xl font-orbitron font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">
-            {appName}
+            Syakir Digital
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-lg sm:text-xl text-white/50 font-medium">
             Solusi Kebutuhan Digital Anda

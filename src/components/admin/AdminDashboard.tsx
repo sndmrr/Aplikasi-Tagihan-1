@@ -8,7 +8,7 @@ import { useTagihanOperations } from '@/hooks/useTagihanOperations';
 import { useAutoCleanup } from '@/hooks/useAutoCleanup';
 import { useGlobalSisaSaldo } from '@/hooks/useGlobalSisaSaldo';
 import { useProfit } from '@/hooks/useProfit';
-import { Plus, Filter, Users, UserPlus, Home, Calendar, FileText, Trash2, ArrowLeft, ArrowLeftToLine, MessageSquare, ChevronUp, ChevronDown, TrendingUp, Settings } from 'lucide-react';
+import { Plus, Filter, Users, UserPlus, Home, Calendar, FileText, Trash2, ArrowLeft, ArrowLeftToLine, MessageSquare, ChevronUp, ChevronDown, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Header } from '@/components/Header';
 import { DashboardCards } from '@/components/DashboardCards';
@@ -44,7 +44,6 @@ import { TanggalSetorMitra } from './TanggalSetorMitra';
 import { RekapLaporan } from './RekapLaporan';
 import { HapusData } from './HapusData';
 import { PesanKeUser } from './PesanKeUser';
-import { AppNameSettings } from './AppNameSettings';
 
 export const AdminDashboard = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -277,14 +276,6 @@ export const AdminDashboard = () => {
               <MessageSquare className="h-4 w-4" />
               Pesan ke User
             </Button>
-            <Button
-              onClick={() => setActiveSection('app_settings')}
-              className="w-full justify-start gap-2"
-              variant="outline"
-            >
-              <Settings className="h-4 w-4" />
-              Pengaturan Aplikasi
-            </Button>
           </div>
         </>
       );
@@ -297,7 +288,6 @@ export const AdminDashboard = () => {
         case 'rekap': return 'Rekap Laporan';
         case 'hapus': return 'Hapus Data';
         case 'pesan_user': return 'Pesan ke User';
-        case 'app_settings': return 'Pengaturan Aplikasi';
         default: return 'Menu Admin';
       }
     };
@@ -325,7 +315,6 @@ export const AdminDashboard = () => {
             {activeSection === 'rekap' && 'Lihat rekap laporan'}
             {activeSection === 'hapus' && 'Hapus data'}
             {activeSection === 'pesan_user' && 'Kirim pesan ke user'}
-            {activeSection === 'app_settings' && 'Pengaturan nama aplikasi'}
           </SheetDescription>
         </SheetHeader>
         <div className="mt-6 space-y-6">
@@ -339,7 +328,6 @@ export const AdminDashboard = () => {
           {activeSection === 'rekap' && <RekapLaporan />}
           {activeSection === 'hapus' && <HapusData />}
           {activeSection === 'pesan_user' && <PesanKeUser />}
-          {activeSection === 'app_settings' && <AppNameSettings />}
         </div>
       </>
     );

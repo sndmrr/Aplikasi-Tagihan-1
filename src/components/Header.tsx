@@ -3,7 +3,6 @@ import { LogOut, Menu, Signal } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { AnimatedLogo } from "@/components/AnimatedLogo";
 import { motion } from 'framer-motion';
-import { useAppSettingsContext } from '@/contexts/AppSettingsContext';
 
 interface HeaderProps {
   onSignOut: () => void;
@@ -12,8 +11,6 @@ interface HeaderProps {
 }
 
 export const Header = ({ onSignOut, showAdminMenu, onAdminMenuClick }: HeaderProps) => {
-  const { appName } = useAppSettingsContext();
-  
   return (
     <motion.header 
       initial={{ opacity: 0, y: -20 }}
@@ -33,7 +30,7 @@ export const Header = ({ onSignOut, showAdminMenu, onAdminMenuClick }: HeaderPro
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-orbitron font-black bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
-                {appName}
+                Syakir Digital
               </h1>
               <Signal className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 animate-pulse" />
             </div>
