@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+// import { supabase } from "@/integrations/supabase/client";
 
 interface PendingRegistration {
   id: string;
@@ -35,124 +35,31 @@ export const PendingRegistrations = () => {
 
   const fetchRegistrations = async () => {
     setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('pending_registrations')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setRegistrations(data || []);
-    } catch (error: any) {
-      console.error('Error fetching registrations:', error);
-      toast({
-        title: "Error",
-        description: "Gagal memuat data pendaftaran",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Database disconnected - no registrations
+    setRegistrations([]);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     fetchRegistrations();
-
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel('pending_registrations_changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'pending_registrations' 
-      }, () => {
-        fetchRegistrations();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const handleApprove = async (registration: PendingRegistration) => {
-    setProcessingId(registration.id);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Tidak ada sesi aktif');
-      }
-
-      const response = await supabase.functions.invoke('manage-users', {
-        body: {
-          action: 'create',
-          email: `${registration.username}@syakirdigital.local`,
-          password: registration.password_hash,
-          username: registration.username,
-          fullName: registration.full_name,
-          role: 'mitra'
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      // Update registration status to approved
-      const { error: updateError } = await supabase
-        .from('pending_registrations')
-        .update({ 
-          status: 'approved',
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', registration.id);
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "✅ Berhasil!",
-        description: `${registration.full_name} telah disetujui sebagai Mitra`,
-      });
-
-      fetchRegistrations();
-    } catch (error: any) {
-      console.error('Error approving registration:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Gagal menyetujui pendaftaran",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingId(null);
-    }
+    // Database disconnected - show error
+    toast({
+      title: "Error",
+      description: "Database tidak tersedia. Fitur dinonaktifkan.",
+      variant: "destructive",
+    });
   };
 
   const handleReject = async (registration: PendingRegistration) => {
-    setProcessingId(registration.id);
-    try {
-      const { error } = await supabase
-        .from('pending_registrations')
-        .delete()
-        .eq('id', registration.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "❌ Ditolak",
-        description: `Pendaftaran ${registration.full_name} telah ditolak dan dihapus`,
-      });
-
-      fetchRegistrations();
-    } catch (error: any) {
-      console.error('Error rejecting registration:', error);
-      toast({
-        title: "Error",
-        description: "Gagal menolak pendaftaran",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingId(null);
-    }
+    // Database disconnected - show error
+    toast({
+      title: "Error",
+      description: "Database tidak tersedia. Fitur dinonaktifkan.",
+      variant: "destructive",
+    });
   };
 
   const formatDate = (dateString: string) => {

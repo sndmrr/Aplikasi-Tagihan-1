@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,15 +38,10 @@ export const CekTagihan = () => {
     if (!searchName.trim()) { toast({ title: "Error", description: "Masukkan nama untuk mencari tagihan", variant: "destructive" }); return; }
     setLoading(true);
     setHasSearched(true);
-    try {
-      const { data, error } = await supabase.from('tagihan').select('id, nama, jumlah, status, created_at').ilike('nama', `%${searchName.trim()}%`).is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      const typedData = (data || []).map(item => ({ ...item, status: item.status as 'belum_lunas' | 'lunas' }));
-      setTagihans(typedData);
-      if (typedData.length === 0) { toast({ title: "Info", description: `Tidak ada tagihan ditemukan untuk nama "${searchName.trim()}"` }); }
-    } catch (error: any) {
-      toast({ title: "Error", description: `Gagal mencari tagihan: ${error.message}`, variant: "destructive" });
-    } finally { setLoading(false); }
+    // Database disconnected - no results
+    setTagihans([]);
+    toast({ title: "Info", description: "Database tidak tersedia. Pencarian dinonaktifkan." });
+    setLoading(false);
   };
 
   const computeDueDate = (items: Tagihan[]) => {

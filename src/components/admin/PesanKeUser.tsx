@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,31 +44,13 @@ export const PesanKeUser = () => {
   }, []);
 
   const fetchProfiles = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, username');
-    if (data) {
-      setProfiles(data.filter(p => p.user_id !== user?.id));
-    }
+    // Database disconnected - no profiles
+    setProfiles([]);
   };
 
   const fetchNotifikasi = async () => {
-    // Auto-delete read notifications older than 24 hours
-    const twentyFourHoursAgo = new Date();
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-
-    await supabase
-      .from('notifikasi_user')
-      .delete()
-      .eq('is_read', true)
-      .not('read_at', 'is', null)
-      .lt('read_at', twentyFourHoursAgo.toISOString());
-
-    const { data } = await supabase
-      .from('notifikasi_user')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) setNotifikasi(data as Notifikasi[]);
+    // Database disconnected - no notifications
+    setNotifikasi([]);
   };
 
   const handleSend = async () => {
@@ -81,25 +63,8 @@ export const PesanKeUser = () => {
       return;
     }
 
-    setSending(true);
-    const { error } = await supabase.from('notifikasi_user').insert({
-      title: title.trim(),
-      message: message.trim(),
-      target_type: targetType,
-      target_user_id: targetType === 'specific' ? targetUserId : null,
-    });
-
-    if (error) {
-      toast({ title: 'Gagal', description: 'Gagal mengirim pesan', variant: 'destructive' });
-    } else {
-      toast({ title: 'Berhasil', description: 'Pesan berhasil dikirim' });
-      setTitle('');
-      setMessage('');
-      setTargetType('all');
-      setTargetUserId('');
-      fetchNotifikasi();
-    }
-    setSending(false);
+    // Database disconnected - show error
+    toast({ title: 'Error', description: 'Database tidak tersedia. Fitur dinonaktifkan.', variant: 'destructive' });
   };
 
   return (

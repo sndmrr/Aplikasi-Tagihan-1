@@ -3,7 +3,7 @@ import { Calendar, Save, Loader2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface MitraProfile {
@@ -24,70 +24,17 @@ export const TanggalSetorMitra = () => {
 
   useEffect(() => {
     fetchMitraProfiles();
-
-    const channel = supabase
-      .channel('profiles_tanggal_setor')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchMitraProfiles();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const fetchMitraProfiles = async () => {
-    try {
-      // Get all mitra user_ids
-      const { data: roles, error: rolesErr } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'mitra');
-
-      if (rolesErr || !roles?.length) {
-        setMitraList([]);
-        setLoading(false);
-        return;
-      }
-
-      const mitraUserIds = roles.map(r => r.user_id);
-
-      const { data: profiles, error: profErr } = await (supabase as any)
-        .from('profiles')
-        .select('id, user_id, full_name, username, tanggal_setor')
-        .in('user_id', mitraUserIds);
-
-      if (profErr) {
-        console.error('Error fetching mitra profiles:', profErr);
-      } else {
-        setMitraList(profiles || []);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-    } finally {
-      setLoading(false);
-    }
+    // Database disconnected - no mitra profiles
+    setMitraList([]);
+    setLoading(false);
   };
 
   const handleSave = async (profileId: string) => {
-    if (!editDate) return;
-    setSaving(true);
-    try {
-      const { error } = await (supabase as any)
-        .from('profiles')
-        .update({ tanggal_setor: editDate })
-        .eq('id', profileId);
-
-      if (error) throw error;
-
-      toast({ title: 'Berhasil', description: 'Tanggal setor berhasil diperbarui' });
-      setEditingId(null);
-      setEditDate('');
-    } catch (err) {
-      console.error(err);
-      toast({ title: 'Error', description: 'Gagal menyimpan tanggal setor', variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
+    // Database disconnected - show error
+    toast({ title: 'Error', description: 'Database tidak tersedia. Fitur dinonaktifkan.', variant: 'destructive' });
   };
 
   const formatDateDisplay = (d: string | null) => {

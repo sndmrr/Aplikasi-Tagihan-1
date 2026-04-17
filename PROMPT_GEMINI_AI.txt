@@ -1,0 +1,411 @@
+================================================================================
+PROMPT UNTUK GEMINI AI - RECREATE APLIKASI SISTEM TAGIHAN DIGITAL
+================================================================================
+
+Judul Aplikasi: Sistem Tagihan Digital
+Deskripsi: Aplikasi manajemen tagihan digital dengan sistem peran (role-based access control) untuk mengelola pembayaran, invoice, dan manajemen user.
+
+================================================================================
+TECH STACK YANG DIGUNAKAN
+================================================================================
+
+Frontend Framework:
+- React 18.3.1 dengan TypeScript
+- Vite 5.4.1 sebagai build tool
+
+Styling:
+- Tailwind CSS 3.4.11
+- shadcn/ui components (berbasis Radix UI)
+- Framer Motion 12.23.26 untuk animasi
+
+UI Components Library:
+- Radix UI (berbagai komponen UI)
+- Lucide React 0.462.0 untuk icons
+
+State Management & Data Fetching:
+- TanStack React Query 5.56.2
+- React Context API
+
+Routing:
+- React Router DOM 6.26.2
+
+Backend & Database:
+- Supabase (supabase-js 2.50.0)
+- PostgreSQL database
+
+Utility Libraries:
+- date-fns 3.6.0 untuk manipulasi tanggal
+- html2canvas 1.4.1 untuk generate invoice
+- Recharts 2.12.7 untuk charts
+- zod 3.23.8 untuk validation
+- React Hook Form 7.53.0 untuk form management
+
+================================================================================
+STRUKTUR PROJECT
+================================================================================
+
+Root Directory:
+├── src/
+│   ├── components/
+│   │   ├── ui/ (shadcn/ui components)
+│   │   ├── admin/ (admin-specific components)
+│   │   ├── invoice/ (invoice-related components)
+│   │   ├── mitra/ (mitra/reseller components)
+│   │   ├── AddTagihan.tsx
+│   │   ├── AddTagihanUser.tsx
+│   │   ├── BayarLangsung.tsx
+│   │   ├── CekTagihan.tsx
+│   │   ├── DashboardCards.tsx
+│   │   ├── DeletedTagihan.tsx
+│   │   ├── DepositDateCard.tsx
+│   │   ├── Header.tsx
+│   │   ├── LoadingScreen.tsx
+│   │   ├── ModernNotification.tsx
+│   │   ├── NotifikasiPopup.tsx
+│   │   ├── ResellerRegistration.tsx
+│   │   ├── TagihanAktif.tsx
+│   │   ├── TagihanLunas.tsx
+│   │   └── WelcomeGreeting.tsx
+│   ├── contexts/
+│   │   └── AppSettingsContext.tsx
+│   ├── hooks/
+│   │   ├── useAuth.tsx
+│   │   ├── useSupabaseData.tsx
+│   │   ├── useGlobalSisaSaldo.tsx
+│   │   ├── useUserRole.tsx
+│   │   ├── useUserPermissions.tsx
+│   │   ├── useProfit.tsx
+│   │   ├── useAutoCleanup.tsx
+│   │   ├── useAppSettings.tsx
+│   │   ├── useDepositDate.ts
+│   │   ├── useAdminData.tsx
+│   │   └── useTagihanOperations.ts
+│   ├── integrations/
+│   │   └── supabase/
+│   │       └── client.ts
+│   ├── lib/
+│   ├── pages/
+│   │   ├── Auth.tsx
+│   │   ├── Index.tsx
+│   │   └── NotFound.tsx
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── package.json
+├── tailwind.config.js
+├── tsconfig.json
+└── vite.config.ts
+
+================================================================================
+DATABASE SCHEMA (SUPABASE/POSTGRESQL)
+================================================================================
+
+Tables:
+
+1. profiles
+   - id (uuid, primary key)
+   - user_id (uuid, references auth.users)
+   - full_name (text)
+   - username (text, unique)
+   - tanggal_setor (date, nullable)
+   - created_at (timestamp)
+   - updated_at (timestamp)
+
+2. user_roles
+   - id (uuid, primary key)
+   - user_id (uuid, references profiles.user_id)
+   - role (text) - values: 'admin', 'mitra', 'user'
+   - created_at (timestamp)
+
+3. tagihan (bills)
+   - id (uuid, primary key)
+   - user_id (uuid, references profiles.user_id)
+   - nama (text) - nama tagihan/pelanggan
+   - jumlah (integer) - jumlah tagihan
+   - status (text) - 'belum_lunas', 'lunas'
+   - nama_input (text) - user yang input
+   - nama_lunas (text, nullable) - user yang mark sebagai lunas
+   - created_at (timestamp)
+   - updated_at (timestamp)
+   - deleted_at (timestamp, nullable) - untuk soft delete
+
+4. settings
+   - id (uuid, primary key)
+   - user_id (uuid, references profiles.user_id)
+   - saldo_awal (integer)
+   - created_at (timestamp)
+   - updated_at (timestamp)
+
+5. profit_settings
+   - id (uuid, primary key)
+   - profit_percentage (integer)
+   - created_at (timestamp)
+   - updated_at (timestamp)
+
+6. pending_registrations
+   - id (uuid, primary key)
+   - full_name (text)
+   - username (text, unique)
+   - password_hash (text)
+   - status (text) - 'pending', 'approved', 'rejected'
+   - reviewed_at (timestamp, nullable)
+   - created_at (timestamp)
+
+7. notifikasi_user
+   - id (uuid, primary key)
+   - title (text)
+   - message (text)
+   - target_type (text) - 'all', 'specific'
+   - target_user_id (uuid, nullable)
+   - is_read (boolean)
+   - read_at (timestamp, nullable)
+   - created_at (timestamp)
+
+8. app_settings
+   - id (uuid, primary key)
+   - key (text) - e.g., 'app_name'
+   - value (text)
+   - created_at (timestamp)
+   - updated_at (timestamp)
+
+================================================================================
+FITUR UTAMA APLIKASI
+================================================================================
+
+1. SISTEM AUTENTIKASI
+   - Login dengan email/username dan password
+   - Registrasi user baru (dengan approval admin untuk reseller)
+   - Role-based access control:
+     * Admin: Akses penuh ke semua fitur
+     * Mitra (Reseller): Akses terbatas untuk manajemen tagihan
+     * User: Akses dasar untuk melihat tagihan pribadi
+   - Logout dengan session management
+   - Persistent login dengan localStorage
+
+2. MANAJEMEN TAGIHAN (BILLS)
+   - Tambah tagihan baru (AddTagihan)
+   - Tambah tagihan langsung lunas (BayarLangsung)
+   - Mark tagihan sebagai lunas
+   - Update tagihan (edit nama dan jumlah)
+   - Soft delete tagihan (dengan restore)
+   - Permanent delete tagihan
+   - Hapus semua tagihan lunas sekaligus
+   - Filter dan search tagihan
+   - Kategorisasi:
+     * Tagihan Aktif (belum lunas)
+     * Tagihan Lunas
+     * Tagihan Terhapus (deleted)
+
+3. SISTEM INVOICE
+   - Generate invoice untuk tagihan
+   - Format invoice profesional dengan html2canvas
+   - Download/print invoice
+   - InvoiceDialog component untuk preview
+
+4. DASHBOARD
+   - Dashboard Cards menampilkan:
+     * Total Tagihan
+     * Total Lunas
+     * Total Belum Lunas
+     * Sisa Saldo
+   - Welcome greeting dengan nama user
+   - Statistik visual dengan charts (Recharts)
+   - Real-time updates
+
+5. FITUR KHUSUS ADMIN
+   - User Management:
+     * Tambah user baru
+     * Edit user (nama, role, password)
+     * Hapus user
+     * Assign role (admin, mitra, user)
+     * Set permissions (edit, delete, mark lunas)
+   - Pending Registrations:
+     * View pendaftaran reseller baru
+     * Approve/reject pendaftaran
+     * Auto-create Supabase auth user pada approval
+   - Tanggal Setor Mitra:
+     * Set tanggal setor untuk mitra
+     * Edit tanggal setor
+   - Pesan ke User:
+     * Kirim notifikasi ke semua user
+     * Kirim notifikasi ke user spesifik
+     * History pesan
+   - Rekap Laporan:
+     * Generate laporan
+     * Export data
+   - Hapus Data:
+     * Bulk delete data
+     * Cleanup data lama
+   - App Name Settings:
+     * Customizable nama aplikasi
+     * Global app settings
+
+6. FITUR KHUSUS MITRA (RESELLER)
+   - MitraDashboard dengan fitur khusus
+   - Manajemen tagihan sendiri
+   - View deposit date
+   - Profit settings
+
+7. FITUR PUBLIK
+   - Cek Tagihan:
+     * Search tagihan berdasarkan nama
+     * View status pembayaran
+     * Tidak perlu login
+   - Reseller Registration:
+     * Form pendaftaran reseller
+     * Menunggu approval admin
+
+8. NOTIFIKASI
+   - Real-time notifications dengan Supabase realtime
+   - NotifikasiPopup untuk popup notifikasi
+   - Mark as read functionality
+   - Auto-delete notifikasi lama (24 jam)
+
+9. PROFIL & PENGATURAN
+   - Deposit date management
+   - Profile information
+   - App settings context
+
+10. AUTO CLEANUP
+    - Auto-delete soft-deleted tagihan > 24 jam
+    - Auto-delete read notifications > 24 jam
+    - Runs periodically
+
+11. PERMISSIONS
+    - Role-based permissions:
+     * canEditData
+     * canDeleteData
+     * canLunasData
+    - Configurable per user
+
+12. PROFIT TRACKING
+    - Profit percentage settings
+    - Profit calculations
+    - Global profit management
+
+================================================================================
+KOMPONEN UTAMA
+================================================================================
+
+Core Components:
+- App.tsx: Main app with routing and providers
+- Auth.tsx: Login/Register page
+- Index.tsx: Main dashboard (role-based routing)
+- Header.tsx: Navigation header
+- LoadingScreen.tsx: Loading animation
+- NotFound.tsx: 404 page
+
+Tagihan Components:
+- AddTagihan.tsx: Form tambah tagihan
+- AddTagihanUser.tsx: Form tambah tagihan untuk user spesifik (admin)
+- BayarLangsung.tsx: Form bayar langsung lunas
+- TagihanAktif.tsx: List tagihan belum lunas
+- TagihanLunas.tsx: List tagihan lunas
+- DeletedTagihan.tsx: List tagihan terhapus
+
+Dashboard Components:
+- DashboardCards.tsx: Cards dengan statistik
+- WelcomeGreeting.tsx: Welcome message
+
+Admin Components:
+- AdminDashboard.tsx: Main admin dashboard
+- UserManagement.tsx: User CRUD operations
+- PendingRegistrations.tsx: Approval pendaftaran
+- TanggalSetorMitra.tsx: Set tanggal setor
+- PesanKeUser.tsx: Kirim notifikasi
+- RekapLaporan.tsx: Generate laporan
+- HapusData.tsx: Bulk delete
+- AppNameSettings.tsx: App name settings
+
+Invoice Components:
+- Invoice.tsx: Invoice component
+- InvoiceDialog.tsx: Dialog preview invoice
+
+Other Components:
+- CekTagihan.tsx: Public bill checker
+- ResellerRegistration.tsx: Reseller registration form
+- DepositDateCard.tsx: Display deposit date
+- NotifikasiPopup.tsx: Notification popup
+- ModernNotification.tsx: Modern notification system
+
+================================================================================
+HOOKS UTAMA
+================================================================================
+
+- useAuth.tsx: Authentication management (login, logout, session)
+- useSupabaseData.tsx: Data fetching untuk tagihan dan settings
+- useUserRole.tsx: Get user role dan profile
+- useUserPermissions.tsx: Get user permissions
+- useGlobalSisaSaldo.tsx: Calculate global balance
+- useProfit.tsx: Profit management
+- useAutoCleanup.tsx: Auto cleanup old data
+- useAppSettings.tsx: App settings management
+- useDepositDate.ts: Deposit date management
+- useAdminData.tsx: Admin-specific data fetching
+- useTagihanOperations.tsx: Tagihan CRUD operations
+
+================================================================================
+SUPABASE INTEGRATION
+================================================================================
+
+File: src/integrations/supabase/client.ts
+- Initialize Supabase client dengan environment variables
+- Environment variables:
+  * VITE_SUPABASE_URL
+  * VITE_SUPABASE_PUBLISHABLE_KEY
+  * VITE_SUPABASE_PROJECT_ID
+
+Real-time subscriptions:
+- Subscribe ke database changes untuk real-time updates
+- Channels untuk: tagihan, settings, profiles, notifikasi_user
+
+================================================================================
+STYLING & THEME
+================================================================================
+
+- Glass morphism design
+- Gradient backgrounds
+- Dark theme dengan slate colors
+- Responsive design (mobile-friendly)
+- Animations dengan Framer Motion
+- Modern UI dengan shadcn/ui components
+
+Color Palette:
+- Primary: Blue/Cyan gradients
+- Secondary: Purple/Pink gradients
+- Success: Green/Emerald
+- Error: Red
+- Warning: Amber/Yellow
+- Background: Slate-900
+
+================================================================================
+INSTRUKSI UNTUK GEMINI AI
+================================================================================
+
+Tolong buatkan ulang aplikasi "Sistem Tagihan Digital" ini dari awal dengan semua fitur dan fungsinya yang lengkap, tanpa ada yang terlewat.
+
+Requirements:
+1. Setup project React + TypeScript + Vite dengan semua dependencies yang disebutkan
+2. Setup Supabase backend dengan semua tables dan schema yang disebutkan
+3. Implement semua komponen yang terdaftar
+4. Implement semua hooks untuk data management
+5. Implement sistem autentikasi dengan role-based access
+6. Implement semua fitur admin, mitra, dan user
+7. Implement real-time subscriptions dengan Supabase
+8. Implement sistem invoice dengan html2canvas
+9. Implement auto cleanup functionality
+10. Styling dengan Tailwind CSS dan shadcn/ui components
+11. Animasi dengan Framer Motion
+12. Pastikan semua fitur berfungsi dengan baik dan terintegrasi
+
+Pastikan untuk:
+- Include semua error handling
+- Include loading states
+- Include form validations dengan zod
+- Include toast notifications
+- Include responsive design
+- Include proper TypeScript types
+- Include proper code organization dan structure
+- Include comments untuk kompleks logic
+
+Aplikasi harus production-ready dengan semua fitur yang berfungsi sepenuhnya.

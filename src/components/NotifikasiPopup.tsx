@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,55 +28,18 @@ export const NotifikasiPopup = () => {
 
   const fetchUnread = useCallback(async () => {
     if (!user) return;
-
-    // Auto-delete read notifications older than 24h
-    const twentyFourHoursAgo = new Date();
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-    await supabase
-      .from('notifikasi_user')
-      .delete()
-      .eq('is_read', true)
-      .not('read_at', 'is', null)
-      .lt('read_at', twentyFourHoursAgo.toISOString());
-
-    const { data } = await supabase
-      .from('notifikasi_user')
-      .select('*')
-      .eq('is_read', false)
-      .order('created_at', { ascending: true });
-
-    if (data && data.length > 0) {
-      const filtered = (data as Notifikasi[]).filter(n =>
-        n.target_type === 'all' || n.target_user_id === user.id
-      );
-      setNotifications(filtered);
-      if (!current && filtered.length > 0) {
-        setCurrent(filtered[0]);
-      }
-    }
+    // Database disconnected - no notifications
+    setNotifications([]);
+    setCurrent(null);
   }, [user, current]);
 
   useEffect(() => {
     fetchUnread();
   }, [fetchUnread]);
 
-  // Realtime subscription
+  // Realtime subscription disabled
   useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('notifikasi-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifikasi_user' }, (payload) => {
-        const newNotif = payload.new as Notifikasi;
-        if (newNotif.target_type === 'all' || newNotif.target_user_id === user.id) {
-          setNotifications(prev => [...prev, newNotif]);
-          setCurrent(prev => prev || newNotif);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Database disconnected - no realtime subscription
   }, [user]);
 
   const handleOk = () => {
@@ -85,11 +48,7 @@ export const NotifikasiPopup = () => {
 
   const handleSudah = async () => {
     if (!current) return;
-    await supabase
-      .from('notifikasi_user')
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .eq('id', current.id);
-
+    // Database disconnected - just remove from local state
     const remaining = notifications.filter(n => n.id !== current.id);
     setNotifications(remaining);
     setCurrent(remaining.length > 0 ? remaining[0] : null);

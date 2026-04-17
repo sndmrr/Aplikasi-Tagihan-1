@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, UserPlus, CheckCircle, ArrowLeft, Star, Clock, Loader2, Signal } from 'lucide-react';
+import { User, Lock, UserPlus, CheckCircle, ArrowBack, Star, Clock, Loader2, Signal } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+// import { supabase } from "@/integrations/supabase/client";
 import { useAppSettingsContext } from '@/contexts/AppSettingsContext';
 
 interface ResellerRegistrationProps {
@@ -30,17 +30,9 @@ export const ResellerRegistration = ({ onBack }: ResellerRegistrationProps) => {
     if (password.length < 6) { toast({ title: "Error", description: "Password minimal 6 karakter!", variant: "destructive" }); return; }
     if (!agreedToTerms) { toast({ title: "Error", description: "Anda harus menyetujui syarat dan ketentuan!", variant: "destructive" }); return; }
     setIsLoading(true);
-    try {
-      const { data: existingReg } = await supabase.from('pending_registrations').select('id').eq('username', username.toLowerCase()).maybeSingle();
-      if (existingReg) { toast({ title: "Error", description: "Username sudah terdaftar atau sedang menunggu konfirmasi!", variant: "destructive" }); setIsLoading(false); return; }
-      const { data: existingProfile } = await supabase.from('profiles').select('id').eq('username', username.toLowerCase()).maybeSingle();
-      if (existingProfile) { toast({ title: "Error", description: "Username sudah digunakan!", variant: "destructive" }); setIsLoading(false); return; }
-      const { error } = await supabase.from('pending_registrations').insert({ full_name: fullName.trim(), username: username.toLowerCase().trim(), password_hash: password, status: 'pending' });
-      if (error) throw error;
-      setShowSuccess(true);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Gagal mendaftar. Silakan coba lagi.", variant: "destructive" });
-    } finally { setIsLoading(false); }
+    // Database disconnected - show error
+    toast({ title: "Error", description: "Database tidak tersedia. Pendaftaran dinonaktifkan.", variant: "destructive" });
+    setIsLoading(false);
   };
 
   if (showSuccess) {
